@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Question ' + ${n + 1})}"></head>
+<body>
+<header th:replace="~{fragments :: nav('practice')}"></header>
+<main class="question-page">
+    <div class="session-bar">
+        <div>
+            <strong th:text="${sess.title}"></strong>
+            <span class="pill" th:text="${sess.mode}"></span>
+            <span class="sub" th:text="'Question ' + ${n + 1} + ' of ' + ${#lists.size(sess.questionIds)}"></span>
+        </div>
+        <div th:if="${secondsLeft != null}" class="timer" id="timer" th:attr="data-seconds=${secondsLeft}">--:--</div>
+        <form method="post" th:action="'/session/' + ${sess.id} + '/finish'" class="inline"
+              onsubmit="return confirm('Finish this session and see the results?')">
+            <button class="small secondary">Finish</button>
+        </form>
+    </div>
+
+    <nav class="qnav">
+        <a th:each="qid, it : ${sess.questionIds}" th:href="'/session/' + ${sess.id} + '/q/' + ${it.index}"
+           th:text="${it.index + 1}"
+           th:classappend="${(it.index == n ? 'current ' : '') + (attempts[qid] == null ? '' : (sess.isExam ? 'answered' : (attempts[qid].correct ? 'ok' : 'bad')))}"></a>
+    </nav>
+
+    <article class="card" th:if="${q == null}">
+        <p>Question <code th:text="${qid}"></code> no longer exists in the content files.</p>
+    </article>
+
+    <article class="card question" th:if="${q != null}">
+        <div class="meta">
+            <code th:text="${q.id}"></code> · <span th:text="${topicTitle}"></span> · <span th:text="${setTitle}"></span>
+            <span th:if="${history != null}" class="sub"
+                  th:text="' · seen ' + ${history.timesSeen} + '×, last ' + (${history.correct} ? 'correct' : 'wrong')"></span>
+        </div>
+        <div class="markdown body" th:utext="${q.bodyHtml}"></div>
+        <p class="sub" th:if="${q.multi}" th:text="'Select ' + ${#sets.size(q.answers)} + ' answers.'"></p>
+
+        <th:block th:with="showFeedback=${!sess.isExam and attempt != null}">
+            <form method="post" th:action="'/session/' + ${sess.id} + '/q/' + ${n}" id="answer-form">
+                <div class="options">
+                    <label th:each="o : ${q.options}" class="option"
+                           th:classappend="${showFeedback} ? (${#sets.contains(q.answers, o.letter)} ? 'correct' : (${#sets.contains(attempt.selected, o.letter)} ? 'wrong' : '')) : ''">
+                        <input th:type="${q.multi} ? 'checkbox' : 'radio'" name="answer" th:value="${o.letter}"
+                               th:checked="${attempt != null and #sets.contains(attempt.selected, o.letter)}"
+                               th:disabled="${showFeedback}">
+                        <span class="letter" th:text="${o.letter} + '.'"></span>
+                        <span class="markdown" th:utext="${o.html}"></span>
+                    </label>
+                </div>
+
+                <div class="buttons" th:if="${!showFeedback}">
+                    <button type="submit" name="go" value="prev" class="secondary" th:if="${sess.isExam and n > 0}">← Previous</button>
+                    <button type="submit" name="go" value="next" th:text="${sess.isExam} ? 'Save & next →' : 'Check answer'">Check</button>
+                    <button type="submit" name="go" value="finish" class="secondary" th:if="${sess.isExam}"
+                            onclick="return confirm('Submit the exam?')">Submit exam</button>
+                </div>
+            </form>
+
+            <div th:if="${showFeedback}" class="feedback" th:classappend="${attempt.correct} ? 'ok' : 'bad'">
+                <h3 th:text="${attempt.correct} ? '✓ Correct' : '✗ Wrong — correct answer: ' + ${q.answerText}"></h3>
+                <div class="markdown" th:utext="${q.explanationHtml}"></div>
+                <div class="buttons">
+                    <a class="button" th:if="${n + 1 < #lists.size(sess.questionIds)}"
+                       th:href="'/session/' + ${sess.id} + '/q/' + ${n + 1}" id="next-link">Next question →</a>
+                    <a class="button" th:if="${n + 1 >= #lists.size(sess.questionIds)}"
+                       th:href="'/session/' + ${sess.id} + '/result'">See results</a>
+                </div>
+            </div>
+        </th:block>
+    </article>
+    <p class="sub keys">Keys: A–H select · Enter submit / next</p>
+</main>
+</body>
+</html>

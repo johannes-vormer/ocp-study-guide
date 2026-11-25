@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Study plan')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('plan')}"></header>
+<main>
+    <section class="card">
+        <h2>4-week study plan</h2>
+        <p class="sub">From <a href="/study/study-plan">docs/study-plan.md</a>. Tick a day off when you finished it.
+            <span th:if="${daysLeft != null}" th:text="${daysLeft} + ' days until the exam.'"></span></p>
+        <p th:if="${#lists.isEmpty(days)}">No plan found — add <code>docs/study-plan.md</code> with <code>### Day N — title</code> sections.</p>
+    </section>
+    <section th:each="d : ${days}" class="card plan-day" th:id="'day-' + ${d.day}" th:classappend="${d.done} ? 'done'">
+        <form method="post" th:action="'/plan/' + ${d.day}" class="inline right">
+            <input type="hidden" name="done" th:value="${!d.done}">
+            <button class="small" th:classappend="${d.done} ? 'secondary'" th:text="${d.done} ? '✓ Done — undo' : 'Mark done'"></button>
+        </form>
+        <h3 th:text="'Day ' + ${d.day} + ' — ' + ${d.title}"></h3>
+        <div class="markdown" th:utext="${d.html}"></div>
+    </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Practice')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('practice')}"></header>
+<main>
+    <p class="notice" th:if="${param.empty}">No questions matched that selection — try another filter.</p>
+
+    <section class="card">
+        <h2>Start a session</h2>
+        <form method="post" action="/practice/start" class="start-form">
+            <label>Questions from
+                <select name="scope">
+                    <option value="all">All questions</option>
+                    <optgroup label="By exam domain">
+                        <option th:each="t : ${topics}" th:if="${t.stats.total > 0}" th:value="'topic:' + ${t.id}"
+                                th:text="${t.title} + ' (' + ${t.stats.total} + ')'"></option>
+                    </optgroup>
+                    <optgroup label="By source">
+                        <option value="source:ocp17-829">Java 17 practice book</option>
+                        <option value="source:java25-gap">Java 17 → 25 gap questions</option>
+                    </optgroup>
+                    <optgroup th:each="src : ${sources}" th:label="${src.key}">
+                        <option th:each="s : ${src.value}" th:value="'set:' + ${s.first.id}"
+                                th:text="${s.first.title} + ' (' + ${s.second.total} + ')'"></option>
+                    </optgroup>
+                </select>
+            </label>
+            <label>Which
+                <select name="filter">
+                    <option value="todo">Not mastered yet (unseen + wrong)</option>
+                    <option value="unseen">Unseen only</option>
+                    <option value="wrong">Mistakes only (latest attempt wrong)</option>
+                    <option value="all">All</option>
+                </select>
+            </label>
+            <label>How many
+                <input type="number" name="count" value="20" min="0" step="5">
+                <span class="sub">0 = all</span>
+            </label>
+            <label class="check"><input type="checkbox" name="shuffle" value="true" checked> Shuffle</label>
+            <label>Mode
+                <select name="mode">
+                    <option value="practice">Practice — feedback after every question</option>
+                    <option value="exam">Exam — timed (120 min per 50 q), results at the end</option>
+                </select>
+            </label>
+            <button type="submit">Start</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Mock exams</h2>
+        <p class="sub">Real exam: 50 questions, 120 minutes, pass ≈ 68%. Take these in week 4.</p>
+        <div class="buttons">
+            <form method="post" action="/practice/start" class="inline">
+                <input type="hidden" name="scope" value="mock-random"><input type="hidden" name="mode" value="exam">
+                <button>Random Java 25 mock (50 q, weighted by domain)</button>
+            </form>
+            <form method="post" action="/practice/start" class="inline" th:each="s : ${sources['ocp17-829']}" th:if="${s.first.topic == 'exam'}">
+                <input type="hidden" name="scope" th:value="'set:' + ${s.first.id}"><input type="hidden" name="mode" value="exam">
+                <button class="secondary" th:text="${s.first.title} + ' (Java 17)'"></button>
+            </form>
+        </div>
+    </section>
+
+    <section class="card" th:each="src : ${sources}">
+        <h2 th:text="${src.key == 'ocp17-829'} ? 'Java 17 practice book (1Z0-829)' : (${src.key == 'java25-gap'} ? 'Java 17 → 25 gap questions' : ${src.key})"></h2>
+        <table class="grid">
+            <thead><tr><th>Set</th><th>Seen</th><th>Accuracy</th><th>Mastered</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="s : ${src.value}">
+                <td th:text="${s.first.title}"></td>
+                <td th:text="${s.second.seen} + '/' + ${s.second.total}"></td>
+                <td th:text="${s.second.accuracy != null} ? ${s.second.accuracy} + '%' : '—'"
+                    th:classappend="${s.second.accuracy != null and s.second.accuracy < 68} ? 'weak'"></td>
+                <td><div th:replace="~{fragments :: bar(${s.second.mastery}, 'small')}"></div></td>
+                <td class="actions">
+                    <form method="post" action="/practice/start" class="inline">
+                        <input type="hidden" name="scope" th:value="'set:' + ${s.first.id}">
+                        <input type="hidden" name="filter" value="todo">
+                        <button class="small">Continue</button>
+                    </form>
+                    <form method="post" action="/practice/start" class="inline" th:if="${s.second.wrong > 0}">
+                        <input type="hidden" name="scope" th:value="'set:' + ${s.first.id}">
+                        <input type="hidden" name="filter" value="wrong">
+                        <button class="small secondary" th:text="'Mistakes (' + ${s.second.wrong} + ')'"></button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+</body>
+</html>

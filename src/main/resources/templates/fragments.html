@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' · OCP 25 Trainer'">OCP 25 Trainer</title>
+    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" media="(prefers-color-scheme: light)">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+    <script src="/app.js" defer></script>
+</head>
+<body>
+<header th:fragment="nav(active)" class="topnav">
+    <a href="/" class="brand">☕ OCP 25 Trainer</a>
+    <nav>
+        <a href="/" th:classappend="${active == 'home'} ? 'active'">Dashboard</a>
+        <a href="/plan" th:classappend="${active == 'plan'} ? 'active'">Study plan</a>
+        <a href="/study" th:classappend="${active == 'study'} ? 'active'">Study</a>
+        <a href="/practice" th:classappend="${active == 'practice'} ? 'active'">Practice</a>
+    </nav>
+    <div class="content-errors" th:if="${!#lists.isEmpty(contentErrors)}">
+        <details>
+            <summary th:text="${#lists.size(contentErrors)} + ' content error(s)'">errors</summary>
+            <ul><li th:each="e : ${contentErrors}" th:text="${e}"></li></ul>
+        </details>
+    </div>
+</header>
+
+<span th:fragment="bar(pct, cls)" class="bar" th:classappend="${cls}">
+    <span th:style="'width:' + ${pct} + '%'"></span>
+</span>
+</body>
+</html>

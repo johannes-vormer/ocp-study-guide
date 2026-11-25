@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Results')}"></head>
+<body>
+<header th:replace="~{fragments :: nav('practice')}"></header>
+<main>
+    <section class="card">
+        <h2 th:text="${sess.title}"></h2>
+        <div class="score" th:classappend="${pct >= 68} ? 'pass' : 'fail'">
+            <span th:text="${pct} + '%'"></span>
+            <span class="sub" th:text="${correct} + ' of ' + ${total} + ' correct · ' + (${pct >= 68} ? 'PASS (≥ 68%)' : 'below 68%')"></span>
+        </div>
+        <table class="grid compact">
+            <thead><tr><th>Domain</th><th>Correct</th></tr></thead>
+            <tbody><tr th:each="b : ${byTopic}"><td th:text="${b.key}"></td><td th:text="${b.value.first} + '/' + ${b.value.second}"></td></tr></tbody>
+        </table>
+        <div class="buttons">
+            <a class="button" th:if="${sess.finishedAt == null}" th:href="'/session/' + ${sess.id} + '/q/0'">Back to session</a>
+            <a class="button secondary" href="/practice">New session</a>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Review</h2>
+        <details th:each="r : ${rows}" class="review" th:classappend="${r.third == null} ? 'skipped' : (${r.third.correct} ? 'ok' : 'bad')">
+            <summary>
+                <span th:text="${r.first + 1} + '.'"></span>
+                <span th:text="${r.third == null} ? '— not answered' : (${r.third.correct} ? '✓' : '✗ you: ' + ${r.third.selectedText})"></span>
+                <code th:if="${r.second != null}" th:text="${r.second.id}"></code>
+            </summary>
+            <div th:if="${r.second != null}">
+                <div class="markdown" th:utext="${r.second.bodyHtml}"></div>
+                <ul class="review-options">
+                    <li th:each="o : ${r.second.options}" th:classappend="${#sets.contains(r.second.answers, o.letter)} ? 'correct' : ''">
+                        <strong th:text="${o.letter} + '.'"></strong> <span class="markdown" th:utext="${o.html}"></span>
+                    </li>
+                </ul>
+                <div class="feedback">
+                    <strong th:text="'Answer: ' + ${r.second.answerText}"></strong>
+                    <div class="markdown" th:utext="${r.second.explanationHtml}"></div>
+                </div>
+            </div>
+        </details>
+    </section>
+</main>
+</body>
+</html>

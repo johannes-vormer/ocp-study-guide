@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${doc.title})}"></head>
+<body>
+<header th:replace="~{fragments :: nav('study')}"></header>
+<main class="with-aside">
+    <article class="card markdown" th:utext="${doc.html}"></article>
+    <aside th:if="${topic != null}">
+        <div class="card sticky">
+            <h3>Your progress</h3>
+            <form method="post" th:action="'/study/' + ${topic} + '/progress'">
+                <input type="hidden" name="doc" th:value="${doc.id}">
+                <label>Status
+                    <select name="status">
+                        <option value="not-started" th:selected="${progress == null or progress.status == 'not-started'}">not started</option>
+                        <option value="reading" th:selected="${progress != null and progress.status == 'reading'}">reading</option>
+                        <option value="done" th:selected="${progress != null and progress.status == 'done'}">done</option>
+                    </select>
+                </label>
+                <label>Confidence (0–5)
+                    <input type="range" name="confidence" min="0" max="5" th:value="${progress != null ? progress.confidence : 0}">
+                </label>
+                <label>Notes
+                    <textarea name="notes" rows="6" th:text="${progress != null ? progress.notes : ''}"></textarea>
+                </label>
+                <button type="submit">Save</button>
+            </form>
+            <hr>
+            <p class="sub"><span th:text="${stats.seen}"></span>/<span th:text="${stats.total}"></span> questions seen ·
+                accuracy <span th:text="${stats.accuracy != null} ? ${stats.accuracy} + '%' : '—'"></span></p>
+            <form method="post" action="/practice/start">
+                <input type="hidden" name="scope" th:value="'topic:' + ${topic}">
+                <input type="hidden" name="filter" value="todo">
+                <input type="hidden" name="count" value="20">
+                <input type="hidden" name="shuffle" value="true">
+                <button type="submit">Practise 20 questions</button>
+            </form>
+        </div>
+    </aside>
+</main>
+</body>
+</html>
