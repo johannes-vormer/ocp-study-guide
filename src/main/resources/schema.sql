@@ -36,3 +36,10 @@ CREATE TABLE IF NOT EXISTS setting (
     key    TEXT PRIMARY KEY,
     value  TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS checklist_item (
+    doc_id      TEXT    NOT NULL,         -- e.g. d01-values
+    item_no     INTEGER NOT NULL,         -- 0-based position of the "- [ ]" item in the doc
+    checked_at  TEXT    NOT NULL,
+    PRIMARY KEY (doc_id, item_no)
+);

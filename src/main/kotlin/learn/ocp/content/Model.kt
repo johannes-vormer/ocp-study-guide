@@ -30,7 +30,20 @@ data class Doc(
     val order: Int,
     val html: String,
     val raw: String,
-)
+) {
+    /** Number of task-list items ("- [ ] ...") outside code blocks: the doc's self-check checklist. */
+    val taskCount: Int by lazy {
+        var inFence = false
+        raw.lines().count { line ->
+            if (line.trimStart().startsWith("```")) inFence = !inFence
+            !inFence && TASK_ITEM.matches(line)
+        }
+    }
+
+    private companion object {
+        val TASK_ITEM = Regex("""^\s*[-*+] \[[ xX]] .*""")
+    }
+}
 
 /** Exam domains, in exam order. */
 object Topics {

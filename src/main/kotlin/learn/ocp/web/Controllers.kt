@@ -6,6 +6,8 @@ import learn.ocp.progress.ProgressRepository
 import learn.ocp.progress.SessionRequest
 import learn.ocp.progress.StudyService
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -76,6 +78,7 @@ class StudyController(
         model.addAttribute("topics", study.topicRows())
         model.addAttribute("topicDocs", content.topicDocs().associateBy { it.topic })
         model.addAttribute("otherDocs", content.docs.values.filter { it.topic == null || it.topic !in Topics.all }.sortedBy { it.order })
+        model.addAttribute("checkedCounts", progress.checkedCounts())
         return "study"
     }
 
@@ -83,6 +86,7 @@ class StudyController(
     fun doc(@PathVariable id: String, model: Model): String {
         val doc = content.docs[id] ?: notFound()
         model.addAttribute("doc", doc)
+        model.addAttribute("checkedItems", progress.checkedItems(id).filter { it < doc.taskCount }.sorted().joinToString(","))
         val topic = doc.topic?.takeIf { it in Topics.all }
         model.addAttribute("topic", topic)
         if (topic != null) {
@@ -90,6 +94,16 @@ class StudyController(
             model.addAttribute("stats", study.stats(content.questionsForTopic(topic)))
         }
         return "doc"
+    }
+
+    /** Called from the page's JavaScript when a self-check box is (un)ticked. */
+    @PostMapping("/study/{id}/check")
+    @ResponseBody
+    fun check(@PathVariable id: String, @RequestParam item: Int, @RequestParam checked: Boolean): ResponseEntity<Void> {
+        val doc = content.docs[id] ?: notFound()
+        if (item !in 0 until doc.taskCount) return ResponseEntity.badRequest().build()
+        progress.setChecked(id, item, checked)
+        return ResponseEntity.noContent().build()
     }
 
     @PostMapping("/study/{topic}/progress")

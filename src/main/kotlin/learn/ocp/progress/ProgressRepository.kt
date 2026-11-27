@@ -146,6 +146,19 @@ class ProgressRepository(private val jdbc: JdbcTemplate) {
         else jdbc.update("DELETE FROM plan_day WHERE day_no = ?", day)
     }
 
+    // ---- self-check checklists (task-list items in docs, by position) ---
+
+    fun checkedItems(docId: String): Set<Int> =
+        jdbc.queryForList("SELECT item_no FROM checklist_item WHERE doc_id = ?", Int::class.java, docId).filterNotNull().toSet()
+
+    fun checkedCounts(): Map<String, Int> =
+        jdbc.query("SELECT doc_id, COUNT(*) FROM checklist_item GROUP BY doc_id", { rs, _ -> rs.getString(1) to rs.getInt(2) }).toMap()
+
+    fun setChecked(docId: String, item: Int, checked: Boolean) {
+        if (checked) jdbc.update("INSERT OR REPLACE INTO checklist_item(doc_id, item_no, checked_at) VALUES (?, ?, ?)", docId, item, now().toString())
+        else jdbc.update("DELETE FROM checklist_item WHERE doc_id = ? AND item_no = ?", docId, item)
+    }
+
     // ---- settings -------------------------------------------------------
 
     fun setting(key: String): String? =

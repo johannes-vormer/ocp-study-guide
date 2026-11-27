@@ -77,7 +77,13 @@ label.check { display: flex; gap: 8px; align-items: center; }
 .markdown img { max-width: 100%; border: 1px solid var(--border); border-radius: 6px; background: #fff; }
 .markdown h1 { font-size: 26px; } .markdown h2 { font-size: 21px; margin-top: 28px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
 .markdown blockquote { border-left: 3px solid var(--accent); margin: 10px 0; padding: 2px 14px; color: var(--muted); }
-.markdown li.task-list-item { list-style: none; }
+.markdown li:has(> input[type=checkbox]) { list-style: none; margin-left: -1.3em; }
+.markdown li.check-item { cursor: pointer; padding: 3px 6px; border-radius: 6px; }
+.markdown li.check-item:hover { background: var(--code-bg); }
+.markdown li.check-item input { margin-right: 8px; cursor: pointer; }
+.markdown li.check-item.checked { color: var(--muted); }
+.checklist-bar { margin-top: 4px; }
+#self-check { scroll-margin-top: 70px; }
 .option .markdown p, .review-options .markdown p { display: inline; margin: 0; }
 .doclist li { margin: 6px 0; }
 
@@ -120,3 +126,4 @@ details.review.ok summary { color: var(--ok); }
 details.review.bad summary { color: var(--bad); }
 details.review.skipped summary { color: var(--muted); }
 .review-options li.correct { color: var(--ok); font-weight: 600; }
+.complete { color: var(--ok); font-weight: 600; }

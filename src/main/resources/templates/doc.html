@@ -4,7 +4,8 @@
 <body>
 <header th:replace="~{fragments :: nav('study')}"></header>
 <main class="with-aside">
-    <article class="card markdown" th:utext="${doc.html}"></article>
+    <article class="card markdown" th:utext="${doc.html}" id="doc-body"
+             th:attr="data-doc=${doc.id},data-checked=${checkedItems}"></article>
     <aside th:if="${topic != null}">
         <div class="card sticky">
             <h3>Your progress</h3>
@@ -26,6 +27,11 @@
                 <button type="submit">Save</button>
             </form>
             <hr>
+            <p th:if="${doc.taskCount > 0}">
+                <a href="#self-check" class="checklist-jump">Self-check</a>:
+                <strong id="checklist-count">0</strong>/<span th:text="${doc.taskCount}"></span>
+                <span th:replace="~{fragments :: bar(0, 'checklist-bar')}"></span>
+            </p>
             <p class="sub"><span th:text="${stats.seen}"></span>/<span th:text="${stats.total}"></span> questions seen ·
                 accuracy <span th:text="${stats.accuracy != null} ? ${stats.accuracy} + '%' : '—'"></span></p>
             <form method="post" action="/practice/start">

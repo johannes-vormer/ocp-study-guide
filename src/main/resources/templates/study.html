@@ -7,7 +7,7 @@
     <section class="card">
         <h2>Topic summaries — read these before practising</h2>
         <table class="grid">
-            <thead><tr><th>Domain</th><th>Status</th><th>Confidence</th><th>Questions</th></tr></thead>
+            <thead><tr><th>Domain</th><th>Status</th><th>Confidence</th><th>Self-check</th><th>Questions</th></tr></thead>
             <tbody>
             <tr th:each="t : ${topics}" th:if="${topicDocs[t.id] != null}">
                 <td><a th:href="'/study/' + ${topicDocs[t.id].id}" th:text="${topicDocs[t.id].title}"></a></td>
@@ -16,6 +16,12 @@
                     <span th:if="${t.progress != null}" class="pill" th:classappend="${t.progress.status}" th:text="${t.progress.status}"></span>
                 </td>
                 <td class="stars" th:text="${t.progress != null} ? ${#strings.repeat('★', t.progress.confidence) + #strings.repeat('☆', 5 - t.progress.confidence)} : '☆☆☆☆☆'"></td>
+                <td th:with="d=${topicDocs[t.id]}, c=${checkedCounts[topicDocs[t.id].id] ?: 0}">
+                    <span th:if="${d.taskCount > 0}"
+                          th:text="${(c > d.taskCount ? d.taskCount : c) + '/' + d.taskCount}"
+                          th:classappend="${c >= d.taskCount} ? 'complete'"></span>
+                    <span th:if="${d.taskCount == 0}">—</span>
+                </td>
                 <td th:text="${t.stats.total}"></td>
             </tr>
             </tbody>
